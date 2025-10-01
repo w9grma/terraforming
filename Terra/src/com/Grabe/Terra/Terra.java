@@ -35,7 +35,7 @@ public class Terra {
         frame.add(panel);  // Panel zum Fenster hinzufügen
         frame.setVisible(true); // Fenster sichtbar machen
 
-        // Datenmodell ccsmjd
+        // Datenmodell Änderung MacBook
         ArrayList<Node> knotenliste = new ArrayList<>();
         knotenliste.add(new Node(-50,-50,0));
         knotenliste.add(new Node(50,-50,0));
