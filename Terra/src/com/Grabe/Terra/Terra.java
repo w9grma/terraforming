@@ -9,7 +9,11 @@ import java.awt.Color;
 public class Terra {
 
     public static void main(String[] args) {
-        // Fenster erstellen
+    	
+    	Terra terra = new Terra();
+    	terra.divide();
+    	
+    	// Fenster erstellen
         JFrame frame = new JFrame("Terra-Forming");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
@@ -57,9 +61,10 @@ public class Terra {
         frame.add(panel);  // Panel zum Fenster hinzufügen
         frame.setVisible(true); // Fenster sichtbar machen
         
-        
-        
     }
     
+    public void divide() {
+    	
+    }
 }
 
