@@ -2,21 +2,28 @@ package com.Grabe.Terra;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
-public class TerraPanel extends JPanel {
+public class TerraPanel extends JPanel implements KeyListener {
 
 	private static final long serialVersionUID = -1085629251417172686L;
 
 	// Datenmodell
-	private final ArrayList<Node> nodes = new ArrayList<>();
-	private final ArrayList<Edge> edges = new ArrayList<>();
-	private final ArrayList<Triangle> triangles = new ArrayList<>();
+	final ArrayList<Node> nodes = new ArrayList<>();
+	final ArrayList<Edge> edges = new ArrayList<>();
+	final ArrayList<Triangle> triangles = new ArrayList<>();
 
-	// Init Block ersetzt Constructor, nur einmalig beim Instantiieren ausgeführt
-	{
+	// Konstruktor
+	public TerraPanel() {
+
+		addKeyListener(this); // KeyListener aktivieren
+		setFocusable(true); // Panel kann Fokus erhalten
+//		requestFocusInWindow(); // Automatisch Fokus geben
+
 		nodes.add(new Node(0, 0, 0));
 		nodes.add(new Node(500, 0, 0));
 		nodes.add(new Node(250, 500, 0));
@@ -27,7 +34,24 @@ public class TerraPanel extends JPanel {
 		triangles.add(new Triangle(0, 1, 2));
 
 		setBackground(Color.WHITE);
+	}
 
+	// KeyListener-Methoden (nur keyPressed relevant)
+	@Override
+	public void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+			// Berechnungsroutine für Dreiecksdaten ausführen
+			performTriangleCalculation();
+			repaint(); // Neu zeichnen
+		}
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
 	}
 
 	@Override
@@ -50,4 +74,7 @@ public class TerraPanel extends JPanel {
 		g.drawLine((int) nodefrom.x, (int) nodefrom.y, (int) nodeto.x, (int) nodeto.y);
 	}
 
+	private void performTriangleCalculation() {
+		nodes.get(edges.get(triangles.get(0).a).to).y += 20;
+	}
 }
