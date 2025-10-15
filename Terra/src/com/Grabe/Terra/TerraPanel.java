@@ -23,11 +23,19 @@ public class TerraPanel extends JPanel implements KeyListener {
 		addKeyListener(this); // KeyListener aktivieren
 		setFocusable(true); // Panel kann Fokus erhalten
 
-		nodes.add(new Node(-1, -1, 0));
-		nodes.add(new Node(1, -1, 0));
-		nodes.add(new Node(0, 1, 0));
-
+		nodes.add(new Node(-Math.cos(Math.PI/6)/2, -0.25, 0));
+		nodes.add(new Node(Math.cos(Math.PI/6)/2, -0.25, 0));
+		nodes.add(new Node(0, 0.5, 0));
 		triangles.add(new Triangle(0, 1, 2, 1));
+
+		nodes.add(new Node(Math.cos(Math.PI/6), 0.5, 0));
+		triangles.add(new Triangle(1, 3, 2, 2));
+
+		nodes.add(new Node(-Math.cos(Math.PI/6), 0.5, 0));
+		triangles.add(new Triangle(0, 2, 4, 3));
+
+		nodes.add(new Node(0, -1, 0));
+		triangles.add(new Triangle(5, 1, 0, 4));
 
 		setBackground(Color.WHITE);
 	}
@@ -59,6 +67,11 @@ public class TerraPanel extends JPanel implements KeyListener {
 		int x = this.getWidth();
 		int yoff = (int) y / 2;
 		int xoff = (int) x / 2;
+		
+		g.drawLine(0, 0, x, y);
+		g.drawLine(0, yoff, x, yoff);
+		g.drawLine(xoff, 0, xoff, y);
+		g.drawOval( (int) (x * (1-magnifier)/2), (int) (y * (1-magnifier)/2), (int) (x * magnifier), (int) (y * magnifier));
 		
 		// Linien zeichnen
 		g.setColor(Color.BLUE);
