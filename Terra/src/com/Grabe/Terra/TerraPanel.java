@@ -14,24 +14,20 @@ public class TerraPanel extends JPanel implements KeyListener {
 
 	// Datenmodell
 	final ArrayList<Node> nodes = new ArrayList<>();
-	final ArrayList<Edge> edges = new ArrayList<>();
 	final ArrayList<Triangle> triangles = new ArrayList<>();
-
+	final double magnifier = 0.9;
+	
 	// Konstruktor
 	public TerraPanel() {
 
 		addKeyListener(this); // KeyListener aktivieren
 		setFocusable(true); // Panel kann Fokus erhalten
-//		requestFocusInWindow(); // Automatisch Fokus geben
 
-		nodes.add(new Node(0, 0, 0));
-		nodes.add(new Node(500, 0, 0));
-		nodes.add(new Node(250, 500, 0));
+		nodes.add(new Node(-1, -1, 0));
+		nodes.add(new Node(1, -1, 0));
+		nodes.add(new Node(0, 1, 0));
 
-		edges.add(new Edge(0, 1));
-		edges.add(new Edge(1, 2));
-		edges.add(new Edge(2, 0));
-		triangles.add(new Triangle(0, 1, 2));
+		triangles.add(new Triangle(0, 1, 2, 1));
 
 		setBackground(Color.WHITE);
 	}
@@ -41,7 +37,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 	public void keyPressed(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_SPACE) {
 			// Berechnungsroutine für Dreiecksdaten ausführen
-			performTriangleCalculation();
+			doSubdivideTriangles();
 			repaint(); // Neu zeichnen
 		}
 	}
@@ -58,23 +54,35 @@ public class TerraPanel extends JPanel implements KeyListener {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g); // Hintergrund und Rahmen zeichnen
 
+		// Offset-Ermittlung für Mitte des Panels
+		int y = this.getHeight();
+		int x = this.getWidth();
+		int yoff = (int) y / 2;
+		int xoff = (int) x / 2;
+		
 		// Linien zeichnen
 		g.setColor(Color.BLUE);
 		for (Triangle triangle : triangles) {
-			drawEdge(g, triangle.a);
-			drawEdge(g, triangle.b);
-			drawEdge(g, triangle.c);
+			int ndA = triangle.vertexes[0];
+			int ndB = triangle.vertexes[1];
+			int ndC = triangle.vertexes[2];
+			int ax = (int) (nodes.get(ndA).x/2*x*magnifier);
+			int ay = (int) (nodes.get(ndA).y/2*y*magnifier);
+			int bx = (int) (nodes.get(ndB).x/2*x*magnifier);
+			int by = (int) (nodes.get(ndB).y/2*y*magnifier);
+			int cx = (int) (nodes.get(ndC).x/2*x*magnifier);
+			int cy = (int) (nodes.get(ndC).y/2*y*magnifier);
+			g.drawLine(ax+xoff, -ay+yoff, bx+xoff, -by+yoff);
+			g.drawLine(bx+xoff, -by+yoff, cx+xoff, -cy+yoff);
+			g.drawLine(cx+xoff, -cy+yoff, ax+xoff, -ay+yoff);
 		}
 	}
 
-	private void drawEdge(Graphics g, int e) {
-		Edge edge = edges.get(e);
-		Node nodefrom = nodes.get(edge.from);
-		Node nodeto = nodes.get(edge.to);
-		g.drawLine((int) nodefrom.x, (int) nodefrom.y, (int) nodeto.x, (int) nodeto.y);
-	}
-
-	private void performTriangleCalculation() {
-		nodes.get(edges.get(triangles.get(0).a).to).y += 20;
+	private void doSubdivideTriangles() {
+		for (Triangle tri: triangles) {
+			int ndA = tri.vertexes[0];
+			int ndB = tri.vertexes[1];
+			int ndC = tri.vertexes[2];			
+		}
 	}
 }

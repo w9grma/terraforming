@@ -1,11 +1,15 @@
 package com.Grabe.Terra;
 
 public class Triangle {
-	int a, b, c;
+	int[] vertexes = new int[3];
+	int id;
 
-	Triangle(int a, int b, int c) {
-		this.a = a;
-		this.b = b;
-		this.c = c;
+	// Konstruktor
+	Triangle(int a,int b, int c, int id) {
+		vertexes[0] = a;
+		vertexes[1] = b;
+		vertexes[2] = c;
+		this.id = id;
 	}
+	
 }
