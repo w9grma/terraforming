@@ -13,7 +13,7 @@ public class Terra {
 			// Fenster erstellen
 			JFrame frame = new JFrame("Terra Forming");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			frame.setSize(800, 600);
+			frame.setSize(800, 828);
 			frame.add(panel); // Panel zum Fenster hinzufügen
 			frame.setVisible(true);
 		});

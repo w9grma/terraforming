@@ -2,10 +2,10 @@ package com.Grabe.Terra;
 
 public class Triangle {
 	int[] vertexes = new int[3];
-	int id;
+	String id;
 
 	// Konstruktor
-	Triangle(int a,int b, int c, int id) {
+	Triangle(int a,int b, int c, String id) {
 		vertexes[0] = a;
 		vertexes[1] = b;
 		vertexes[2] = c;
