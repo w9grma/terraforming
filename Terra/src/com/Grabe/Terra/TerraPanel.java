@@ -16,7 +16,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 	final ArrayList<Node> nodes = new ArrayList<>();
 	final ArrayList<Triangle> triangles = new ArrayList<>();
 	double magnifier = 400;
-	double alpha = Math.PI/4;   // Drehung um x
+	double alpha = Math.PI/8;   // Drehung um x
 	double beta = 0;  			// Drehung um y
 	double gamma = 0;			// Drehung um z
 	double persp_eye = 1;
@@ -28,20 +28,26 @@ public class TerraPanel extends JPanel implements KeyListener {
 		addKeyListener(this); // KeyListener aktivieren
 		setFocusable(true); // Panel kann Fokus erhalten
 
-		nodes.add(new Node(-Math.cos(Math.PI/6)/2, 0, -0.25, "A"));
-		nodes.add(new Node(Math.cos(Math.PI/6)/2, 0, -0.25, "B"));
-		nodes.add(new Node(0, 0, 0.5, "C"));
+		nodes.add(new Node(	-Math.cos(Math.PI/6)/2, 		0, 				-0.25, 	"A"));
+		nodes.add(new Node(	 Math.cos(Math.PI/6)/2, 		0, 				-0.25, 	"B"));
+		nodes.add(new Node(	0, 								0, 				0.5, 	"C"));
 		triangles.add(new Triangle(0, 1, 2, "ABC"));
 
-		nodes.add(new Node(Math.cos(Math.PI/6), 0, 0.5, "D"));
+		nodes.add(new Node(	 Math.cos(Math.PI/6), 			0, 				0.5, 	"D"));
 		triangles.add(new Triangle(1, 3, 2, "BDC"));
 
-		nodes.add(new Node(-Math.cos(Math.PI/6), 0, 0.5, "E"));
+		nodes.add(new Node(	-Math.cos(Math.PI/6), 			0, 				0.5, 	"E"));
 		triangles.add(new Triangle(0, 2, 4, "ACE"));
 
-		nodes.add(new Node(0, 0, -1, "F"));
+		nodes.add(new Node(	0, 								0, 				-1, 	"F"));
 		triangles.add(new Triangle(5, 1, 0, "FBA"));
 
+		// Add special nodes and triangle for local xyz axes
+		nodes.add(new Node(0.5,0,0,"x"));
+		nodes.add(new Node(0,0.5,0,"y"));
+		nodes.add(new Node(0,0,0.5,"z"));
+		triangles.add(new Triangle(6,7,8,"-1"));
+		
 		setBackground(Color.WHITE);
 	}
 
@@ -92,6 +98,9 @@ public class TerraPanel extends JPanel implements KeyListener {
 		
 		// Draw x, y and z axis, global and local ones
 		g.drawLine(10, y-10, 110, y-10); g.drawString("X", 110, y-10);
+		g.drawLine(10, y-10, 10, y-110); g.drawString("Y", 10, y-110);
+		g.drawLine(10, y-10, 56, y-56); g.drawString("Z", 56, y-56);
+		
 		
 		// Linien zeichnen
 		g.setColor(Color.BLUE);
@@ -143,7 +152,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 			cy = ncy; 
 			cz = Math.cos(beta) * ncz - Math.sin(beta) * ncx;
 			
-			// -- Rotate Beta secondly on top of alpha rotation
+			// -- Rotate Gamma last on top of beta rotation
 			// -- Vertex A
 			nax = Math.cos(gamma) * ax - Math.sin(gamma) * ay;
 			nay = Math.cos(gamma) * ay + Math.sin(gamma) * ax; 
@@ -176,12 +185,21 @@ public class TerraPanel extends JPanel implements KeyListener {
 			int bcy = (int) (- ncy * magnifier + yoff); 
 			
 			// Acutal drawing
+			if (triangle.id == "-1") {
+				g.drawLine(0 + xoff, 0 + yoff, bax, bay);
+				g.drawString(nodes.get(ndA).id, bax-3, bay-5);
+				g.drawLine(0 + xoff, 0 + yoff, bbx, bby);
+				g.drawString(nodes.get(ndB).id, bbx-3, bby-5);
+				g.drawLine(0 + xoff, 0 + yoff, bcx, bcy);
+				g.drawString(nodes.get(ndC).id, bcx-3, bcy-5);
+			} else {
 			g.drawLine(bax, bay, bbx, bby);
 			g.drawString(nodes.get(ndA).id, bax-3, bay-5);
 			g.drawLine(bbx, bby, bcx, bcy);
 			g.drawString(nodes.get(ndB).id, bbx-3, bby-5);
 			g.drawLine(bcx, bcy, bax, bay);
 			g.drawString(nodes.get(ndC).id, bcx-3, bcy-5);
+			}
 		}
 	}
 

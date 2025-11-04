@@ -1,7 +1,7 @@
 package com.Grabe.Terra;
 
 public class Triangle {
-	int[] vertexes = new int[3];
+	int[] vertexes = new int[4];
 	String id;
 
 	// Konstruktor
