@@ -84,10 +84,14 @@ public class TerraPanel extends JPanel implements KeyListener {
 		int yoff = (int) y / 2;
 		int xoff = (int) x / 2;
 		
+		// Draw helper lines and circle on the screen
 		g.drawLine(0, 0, x, y);
 		g.drawLine(0, yoff, x, yoff);
 		g.drawLine(xoff, 0, xoff, y);
 		g.drawOval( (int) (x * (1-magnifier)/2), (int) (y * (1-magnifier)/2), (int) (x * magnifier), (int) (y * magnifier));
+		
+		// Draw x, y and z axis, global and local ones
+		g.drawLine(10, y-10, 110, y-10); g.drawString("X", 110, y-10);
 		
 		// Linien zeichnen
 		g.setColor(Color.BLUE);
