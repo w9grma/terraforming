@@ -57,7 +57,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 		
 		doSubdivideTriangles();
 		
-		switch (e.getKeyCode()) {
+		switch (e.getExtendedKeyCode()) {
 			// y-axis rotation
 			case KeyEvent.VK_A:
 			case KeyEvent.VK_NUMPAD4: 	beta -= Math.PI/100; break;
