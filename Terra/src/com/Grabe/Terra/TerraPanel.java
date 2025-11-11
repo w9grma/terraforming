@@ -43,9 +43,9 @@ public class TerraPanel extends JPanel implements KeyListener {
 		triangles.add(new Triangle(5, 1, 0, "FBA"));
 
 		// Add special nodes and triangle for local xyz axes
-		nodes.add(new Node(0.5,0,0,"x"));
-		nodes.add(new Node(0,0.5,0,"y"));
-		nodes.add(new Node(0,0,0.5,"z"));
+		nodes.add(new Node(0.25,0,0,"x"));
+		nodes.add(new Node(0,0.25,0,"y"));
+		nodes.add(new Node(0,0,0.25,"z"));
 		triangles.add(new Triangle(6,7,8,"-1"));
 		
 		setBackground(Color.WHITE);
@@ -58,14 +58,28 @@ public class TerraPanel extends JPanel implements KeyListener {
 		doSubdivideTriangles();
 		
 		switch (e.getKeyCode()) {
-			case KeyEvent.VK_NUMPAD4: beta -= Math.PI/100; break;
-			case KeyEvent.VK_NUMPAD6: beta += Math.PI/100; break;
-			case KeyEvent.VK_NUMPAD2: alpha -= Math.PI/100; break;
-			case KeyEvent.VK_NUMPAD8: alpha += Math.PI/100; break;
+			// y-axis rotation
+			case KeyEvent.VK_A:
+			case KeyEvent.VK_NUMPAD4: 	beta -= Math.PI/100; break;
+			case KeyEvent.VK_D:
+			case KeyEvent.VK_NUMPAD6: 	beta += Math.PI/100; break;
+			// x-axis rotation
+			case KeyEvent.VK_NUMPAD2:
+			case KeyEvent.VK_S: 		alpha -= Math.PI/100; break;
+			case KeyEvent.VK_W:
+			case KeyEvent.VK_NUMPAD8: 	alpha += Math.PI/100; break;
+			// magnification
+			case KeyEvent.VK_PLUS:
 			case KeyEvent.VK_PAGE_UP: magnifier += 50; break;
+			case KeyEvent.VK_MINUS:
 			case KeyEvent.VK_PAGE_DOWN: magnifier -= 50; break;
+			// z-axis rotation
+			case KeyEvent.VK_E:
 			case KeyEvent.VK_NUMPAD9: gamma += Math.PI/100; break;
+			case KeyEvent.VK_Q:
 			case KeyEvent.VK_NUMPAD7: gamma -= Math.PI/100; break;
+			// reset rotation
+			case KeyEvent.VK_X:
 			case KeyEvent.VK_NUMPAD5: alpha = beta = gamma = 0; break;
 		} 
 		
@@ -96,10 +110,10 @@ public class TerraPanel extends JPanel implements KeyListener {
 		g.drawLine(xoff, 0, xoff, y);
 		g.drawOval( (int) (x * (1-magnifier)/2), (int) (y * (1-magnifier)/2), (int) (x * magnifier), (int) (y * magnifier));
 		
-		// Draw x, y and z axis, global and local ones
+		// Draw global x, y and z axes
 		g.drawLine(10, y-10, 110, y-10); g.drawString("X", 110, y-10);
 		g.drawLine(10, y-10, 10, y-110); g.drawString("Y", 10, y-110);
-		g.drawLine(10, y-10, 56, y-56); g.drawString("Z", 56, y-56);
+		g.drawLine(10, y-10, 36, y-36); g.drawString("Z", 36, y-36);
 		
 		
 		// Linien zeichnen
@@ -185,6 +199,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 			int bcy = (int) (- ncy * magnifier + yoff); 
 			
 			// Acutal drawing
+			// if triangle id is "-1" this marks the local x,y and z axes (coordinate system)...
 			if (triangle.id == "-1") {
 				g.drawLine(0 + xoff, 0 + yoff, bax, bay);
 				g.drawString(nodes.get(ndA).id, bax-3, bay-5);
@@ -193,6 +208,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 				g.drawLine(0 + xoff, 0 + yoff, bcx, bcy);
 				g.drawString(nodes.get(ndC).id, bcx-3, bcy-5);
 			} else {
+			// ... all other triangles are real triangles
 			g.drawLine(bax, bay, bbx, bby);
 			g.drawString(nodes.get(ndA).id, bax-3, bay-5);
 			g.drawLine(bbx, bby, bcx, bcy);
