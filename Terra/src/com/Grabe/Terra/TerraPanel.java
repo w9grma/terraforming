@@ -15,12 +15,12 @@ public class TerraPanel extends JPanel implements KeyListener {
 	// Datenmodell
 	final ArrayList<Node> nodes = new ArrayList<>();
 	final ArrayList<Triangle> triangles = new ArrayList<>();
-	double magnifier = 400;
+	double magnifier = 1000;
 	double alpha = Math.PI/8;   // Drehung um x
 	double beta = 0;  			// Drehung um y
 	double gamma = 0;			// Drehung um z
 	double persp_eye = 1;
-	double persp_model = 1;
+	double persp_model = 1.5;
 	
 	// Konstruktor
 	public TerraPanel() {
@@ -43,9 +43,9 @@ public class TerraPanel extends JPanel implements KeyListener {
 		triangles.add(new Triangle(5, 1, 0, "FBA"));
 
 		// Add special nodes and triangle for local xyz axes
-		nodes.add(new Node(0.25,0,0,"x"));
-		nodes.add(new Node(0,0.25,0,"y"));
-		nodes.add(new Node(0,0,0.25,"z"));
+		nodes.add(new Node(1,0,0,"x"));
+		nodes.add(new Node(0,1,0,"y"));
+		nodes.add(new Node(0,0,1,"z"));
 		triangles.add(new Triangle(6,7,8,"-1"));
 		
 		setBackground(Color.WHITE);
@@ -105,10 +105,9 @@ public class TerraPanel extends JPanel implements KeyListener {
 		int xoff = (int) x / 2;
 		
 		// Draw helper lines and circle on the screen
-		g.drawLine(0, 0, x, y);
-		g.drawLine(0, yoff, x, yoff);
-		g.drawLine(xoff, 0, xoff, y);
-		g.drawOval( (int) (x * (1-magnifier)/2), (int) (y * (1-magnifier)/2), (int) (x * magnifier), (int) (y * magnifier));
+//		g.drawLine(0, 0, x, y);
+//		g.drawLine(0, yoff, x, yoff);
+//		g.drawLine(xoff, 0, xoff, y);
 		
 		// Draw global x, y and z axes
 		g.drawLine(10, y-10, 110, y-10); g.drawString("X", 110, y-10);
@@ -189,26 +188,32 @@ public class TerraPanel extends JPanel implements KeyListener {
 			ncx = ncx * persp_eye / (persp_eye + persp_model + ncz);  
 			ncy = ncy * persp_eye / (persp_eye + persp_model + ncz);  
 			
-			
-			// Transform coordinctes to screen presentation
+						
+			// Acutal drawing
+			// if triangle id is "-1" this marks the local x,y and z axes (coordinate system)...
+			if (triangle.id == "-1") {
+				// Transform coordinctes to screen presentation, for axes without magnification
+				int bax = (int) (nax * 100 ); 
+				int bay = (int) (- nay * 100 ); 
+				int bbx = (int) (nbx * 100 ); 
+				int bby = (int) (- nby * 100 ); 
+				int bcx = (int) (ncx * 100 ); 
+				int bcy = (int) (- ncy * 100 ); 
+				g.drawLine(60  , 60  , bax + 60  , bay + 60  );
+				g.drawString(nodes.get(ndA).id, bax + 60   - 3, bay + 60   - 5);
+				g.drawLine(60  , 60  , bbx + 60  , bby + 60  );
+				g.drawString(nodes.get(ndB).id, bbx + 60   - 3, bby + 60   - 5);
+				g.drawLine(60  , 60  , bcx + 60  , bcy + 60  );
+				g.drawString(nodes.get(ndC).id, bcx + 60   - 3, bcy + 60   - 5);
+			} else {
+			// ... all other triangles are real triangles
+				// Transform coordinctes to screen presentation
 			int bax = (int) (nax * magnifier + xoff); 
 			int bay = (int) (- nay * magnifier + yoff); 
 			int bbx = (int) (nbx * magnifier + xoff); 
 			int bby = (int) (- nby * magnifier + yoff); 
 			int bcx = (int) (ncx * magnifier + xoff); 
 			int bcy = (int) (- ncy * magnifier + yoff); 
-			
-			// Acutal drawing
-			// if triangle id is "-1" this marks the local x,y and z axes (coordinate system)...
-			if (triangle.id == "-1") {
-				g.drawLine(0 + xoff, 0 + yoff, bax, bay);
-				g.drawString(nodes.get(ndA).id, bax-3, bay-5);
-				g.drawLine(0 + xoff, 0 + yoff, bbx, bby);
-				g.drawString(nodes.get(ndB).id, bbx-3, bby-5);
-				g.drawLine(0 + xoff, 0 + yoff, bcx, bcy);
-				g.drawString(nodes.get(ndC).id, bcx-3, bcy-5);
-			} else {
-			// ... all other triangles are real triangles
 			g.drawLine(bax, bay, bbx, bby);
 			g.drawString(nodes.get(ndA).id, bax-3, bay-5);
 			g.drawLine(bbx, bby, bcx, bcy);
@@ -219,6 +224,9 @@ public class TerraPanel extends JPanel implements KeyListener {
 		}
 	}
 
+	ArrayList<Edge> edges = new ArrayList<>();
+	String edgeID;
+	
 	private void doSubdivideTriangles() {
 		for (Triangle tri: triangles) {
 			// get Node indexes
@@ -227,15 +235,14 @@ public class TerraPanel extends JPanel implements KeyListener {
 			int ndC = tri.vertexes[2];
 			
 			// Determine edges
-			ArrayList<Edge> edges = new ArrayList<>();
 			String fromID = nodes.get(ndA).id;
 			String toID = nodes.get(ndB).id;
-//			if (fromID.compareTo(toID) < 0) {
-//				String edgeID = fromID + "|" + toID;
-//			} else {
-//				String edgeID = toID + "|" + fromID;
-//			};
-//			Edge mynewedge = new Edge( id = "h", node1 = 2, node2 = 3);
+			if (fromID.compareTo(toID) < 0) {
+				edgeID = fromID + "|" + toID;
+			} else {
+				edgeID = toID + "|" + fromID;
+			};
+			if (edges.contains(new Edge( edgeID )));
 		}
 	}
 }
