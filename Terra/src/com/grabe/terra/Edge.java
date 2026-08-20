@@ -1,9 +1,11 @@
 package com.grabe.terra;
 
 public class Edge {
-	String id;
-	
-	public Edge(String id) {
-		this.id = id;
+	final Vertex p1;
+	final Vertex p2;
+
+	public Edge(Vertex p1, Vertex p2) {
+		this.p1 = p1;
+		this.p2 = p2;
 	}
 }

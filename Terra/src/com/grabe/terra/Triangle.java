@@ -1,15 +1,15 @@
 package com.grabe.terra;
 
 public class Triangle {
-	int[] vertexes = new int[4];
-	String id;
+	final Edge e1;
+	final Edge e2;
+	final Edge e3;
 
 	// Konstruktor
-	Triangle(int a,int b, int c, String id) {
-		vertexes[0] = a;
-		vertexes[1] = b;
-		vertexes[2] = c;
-		this.id = id;
+	Triangle(Edge e1, Edge e2, Edge e3) {
+		this.e1 = e1;
+		this.e2 = e2;
+		this.e3 = e3;
 	}
-	
+
 }
