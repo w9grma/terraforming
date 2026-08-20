@@ -1,6 +1,7 @@
-package com.Grabe.Terra;
+package com.grabe.terra;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -21,6 +22,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 	double gamma = 0;			// Drehung um z
 	double persp_eye = 1;
 	double persp_model = 1.5;
+	boolean showhelp = false;
 	
 	// Konstruktor
 	public TerraPanel() {
@@ -81,6 +83,8 @@ public class TerraPanel extends JPanel implements KeyListener {
 			// reset rotation
 			case KeyEvent.VK_X:
 			case KeyEvent.VK_NUMPAD5: alpha = beta = gamma = 0; break;
+			// show help
+			case KeyEvent.VK_H: showhelp = !showhelp; break;
 		} 
 		
 		repaint(); // Neu zeichnen
@@ -222,6 +226,18 @@ public class TerraPanel extends JPanel implements KeyListener {
 			g.drawString(nodes.get(ndC).id, bcx-3, bcy-5);
 			}
 		}
+		// Draw help info on scree showing key combinations
+		if (showhelp) {
+			Font currentfont = g.getFont();
+			g.setFont(new Font("SansSerif", Font.PLAIN, 20));
+			g.drawString("W,S: Rotate x-axis", 10, 150);
+			g.drawString("A,D: Rotate y-axis", 10, 180);
+			g.drawString("Q,E: Rotate z-axis", 10, 210);
+			g.drawString("X: Reset rotation", 10, 240);
+			g.drawString("H: Display this help on,off", 10, 270);
+			g.setFont(currentfont);
+		}
+
 	}
 
 	ArrayList<Edge> edges = new ArrayList<>();

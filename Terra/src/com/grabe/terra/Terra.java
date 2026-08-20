@@ -1,4 +1,4 @@
-package com.Grabe.Terra;
+package com.grabe.terra;
 
 import javax.swing.*;
 
@@ -13,7 +13,7 @@ public class Terra {
 			// Fenster erstellen
 			JFrame frame = new JFrame("Terra Forming");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			frame.setSize(800, 828);
+			frame.setSize(1200, 1000);
 			frame.add(panel); // Panel zum Fenster hinzufügen
 			frame.setVisible(true);
 		});

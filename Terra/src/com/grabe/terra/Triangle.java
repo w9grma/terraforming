@@ -1,4 +1,4 @@
-package com.Grabe.Terra;
+package com.grabe.terra;
 
 public class Triangle {
 	int[] vertexes = new int[4];
