@@ -24,6 +24,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 	double persp_eye = 1;
 	double persp_model = 1.5;
 	boolean showhelp = false;
+	boolean showaxis = true;
 
 	// Konstruktor
 	public TerraPanel() {
@@ -31,8 +32,8 @@ public class TerraPanel extends JPanel implements KeyListener {
 		addKeyListener(this); // KeyListener aktivieren
 		setFocusable(true); // Panel kann Fokus erhalten
 
-		// 1. Dreieck ABC, unten links
-		Vertex va = new Vertex(-Math.cos(Math.PI / 6) / 2, 0, -0.25, 'A');
+		// 1. Initial triangle ABC
+		Vertex va = new Vertex(-Math.cos(Math.PI / 6) / 2, 0, -0.25, 'A');   // (cos pi/6) / 2 = 0,433...
 		vertices.add(va);
 		Vertex vb = new Vertex(Math.cos(Math.PI / 6) / 2, 0, -0.25, 'B');
 		vertices.add(vb);
@@ -49,54 +50,23 @@ public class TerraPanel extends JPanel implements KeyListener {
 		Triangle tabc = new Triangle(eab, ebc, eca);
 		triangles.add(tabc);
 
-		// 2. Dreieck BDC, unten Mitte
-		Vertex vd = new Vertex(Math.cos(Math.PI / 6), 0, 0.5, 'D');
-		vertices.add(vd);
-
-		Edge ebd = new Edge(vb, vd);
-		kanten.add(ebd);
-		Edge edc = new Edge(vd, vc);
-		kanten.add(edc);
-
-		Triangle tbdc = new Triangle(ebd, edc, ebc);
-		triangles.add(tbdc);
-
-		// 3. Dreieck BED, unten rechts
-		Vertex ve = new Vertex(-Math.cos(Math.PI / 6), 0, 0.5, 'E');
-		vertices.add(ve);
-		Edge ebe = new Edge(vb, ve);
-		kanten.add(ebe);
-		Edge eed = new Edge(ve, vd);
-		kanten.add(eed);
-		Triangle tbed = new Triangle(ebe, eed, ebd);
-		triangles.add(tbed);
-
-		// 4. Dreieck CDF, oben
-		Vertex vf = new Vertex(0, 0, -1, 'F');
-		vertices.add(vf);
-		Edge edf = new Edge(vd, vf);
-		kanten.add(edf);
-		Edge efc = new Edge(vf, vc);
-		kanten.add(efc);
-		Triangle tcdf = new Triangle(edc, edf, efc);
-		triangles.add(tcdf);
 
 		// Add special vertices, edges and triangle for local xyz axes
-		Vertex v0 = new Vertex(0, 0, 0, '0');
-		vertices.add(v0);
-		Vertex vx = new Vertex(1, 0, 0, 'x');
-		vertices.add(vx);
-		Vertex vy = new Vertex(0, 1, 0, 'y');
-		vertices.add(vy);
-		Vertex vz = new Vertex(0, 0, 1, 'z');
-		vertices.add(vz);
-		Edge e0x = new Edge(v0, vx);
-		kanten.add(e0x);
-		Edge e0y = new Edge(v0, vy);
-		kanten.add(e0y);
-		Edge e0z = new Edge(v0, vz);
-		kanten.add(e0z);
-		triangles.add(new Triangle(e0x, e0y, e0z));
+//		Vertex v0 = new Vertex(0, 0, 0, '0');
+//		vertices.add(v0);
+//		Vertex vx = new Vertex(1, 0, 0, 'x');
+//		vertices.add(vx);
+//		Vertex vy = new Vertex(0, 1, 0, 'y');
+//		vertices.add(vy);
+//		Vertex vz = new Vertex(0, 0, 1, 'z');
+//		vertices.add(vz);
+//		Edge e0x = new Edge(v0, vx);
+//		kanten.add(e0x);
+//		Edge e0y = new Edge(v0, vy);
+//		kanten.add(e0y);
+//		Edge e0z = new Edge(v0, vz);
+//		kanten.add(e0z);
+//		triangles.add(new Triangle(e0x, e0y, e0z));
 
 		setBackground(Color.WHITE);
 	}
@@ -152,6 +122,9 @@ public class TerraPanel extends JPanel implements KeyListener {
 		// show help
 		case KeyEvent.VK_H:
 			showhelp = !showhelp;
+			break;
+		case KeyEvent.VK_C:
+			showaxis = !showaxis;
 			break;
 		}
 
@@ -245,18 +218,18 @@ public class TerraPanel extends JPanel implements KeyListener {
 			// Actual drawing
 			// if vertex label is "x" this marks the local x,y and z axes (coordinate
 			// system)...
-			if (va.label == 'x') {
-				// Transform coordinates to screen presentation, for axes without magnification
-				int bax = (int) (nax * 100);
-				int bay = (int) (-nay * 100);
-				int bbx = (int) (nbx * 100);
-				int bby = (int) (-nby * 100);
-				g.drawLine(60, 60, bax + 60, bay + 60);
-				g.drawString(Character.toString(vb.label), bax + 60 - 3, bay + 60 - 5);
-//				g.drawLine(60, 60, bbx + 60, bby + 60);
-//				g.drawString(nodes.get(ndB).id, bbx + 60 - 3, bby + 60 - 5);
-//				g.drawLine(60, 60, bcx + 60, bcy + 60);
-//				g.drawString(nodes.get(ndC).id, bcx + 60 - 3, bcy + 60 - 5);
+			if ( ( showaxis == true ) && ( va.label == 'x' || va.label == 'y' || va.label == 'z' )) {
+//				// Transform coordinates to screen presentation, for axes without magnification
+//				int bax = (int) (nax * 100);
+//				int bay = (int) (-nay * 100);
+//				int bbx = (int) (nbx * 100);
+//				int bby = (int) (-nby * 100);
+//				g.drawLine(60, 60, bax + 60, bay + 60);
+//				g.drawString(Character.toString(vb.label), bax + 60 - 3, bay + 60 - 5);
+////				g.drawLine(60, 60, bbx + 60, bby + 60);
+////				g.drawString(nodes.get(ndB).id, bbx + 60 - 3, bby + 60 - 5);
+////				g.drawLine(60, 60, bcx + 60, bcy + 60);
+////				g.drawString(nodes.get(ndC).id, bcx + 60 - 3, bcy + 60 - 5);
 			} else {
 				// ... all other triangles are real triangles
 				// Transform coordinates to screen presentation
@@ -281,6 +254,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 			g.drawString("Q,E: Rotate z-axis", 10, 210);
 			g.drawString("X: Reset rotation", 10, 240);
 			g.drawString("H: Display this help on,off", 10, 270);
+			g.drawString("C: Display local x,y,z axis", 10, 300);
 			g.setFont(currentfont);
 		}
 
