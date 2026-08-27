@@ -18,13 +18,19 @@ public class TerraPanel extends JPanel implements KeyListener {
 	final ArrayList<Triangle> triangles = new ArrayList<>();
 	final ArrayList<Edge> kanten = new ArrayList<>();
 	double magnifier = 1000;
-	double alpha = Math.PI / 8; // Drehung um x
+	double alpha = 0; // Drehung um x
 	double beta = 0; // Drehung um y
 	double gamma = 0; // Drehung um z
+	final double default_alpha = Math.toRadians(45);
+	final double rotation_step = Math.toRadians(2);
+	final double pi = Math.PI;
+	final double twopi = 2 * Math.PI;
 	double persp_eye = 1;
 	double persp_model = 1.5;
+	String string2draw;
 	boolean showhelp = false;
 	boolean showaxis = true;
+	boolean drawvertexcoordinates = false;
 
 	// Konstruktor
 	public TerraPanel() {
@@ -33,9 +39,9 @@ public class TerraPanel extends JPanel implements KeyListener {
 		setFocusable(true); // Panel kann Fokus erhalten
 
 		// 1. Initial triangle ABC
-		Vertex va = new Vertex(-Math.cos(Math.PI / 6) / 2, 0, -0.25, 'A');   // (cos pi/6) / 2 = 0,433...
+		Vertex va = new Vertex(-Math.cos(pi / 6) / 2, 0, -0.25, 'A'); // (cos pi/6) / 2 = 0,433...
 		vertices.add(va);
-		Vertex vb = new Vertex(Math.cos(Math.PI / 6) / 2, 0, -0.25, 'B');
+		Vertex vb = new Vertex(Math.cos(pi / 6) / 2, 0, -0.25, 'B');
 		vertices.add(vb);
 		Vertex vc = new Vertex(0, 0, 0.5, 'C');
 		vertices.add(vc);
@@ -49,7 +55,6 @@ public class TerraPanel extends JPanel implements KeyListener {
 
 		Triangle tabc = new Triangle(eab, ebc, eca);
 		triangles.add(tabc);
-
 
 		// Add special vertices, edges and triangle for local xyz axes
 //		Vertex v0 = new Vertex(0, 0, 0, '0');
@@ -69,6 +74,9 @@ public class TerraPanel extends JPanel implements KeyListener {
 //		triangles.add(new Triangle(e0x, e0y, e0z));
 
 		setBackground(Color.WHITE);
+		setFont(new Font("Monospaced", Font.PLAIN, 16));
+
+		alpha = default_alpha;
 	}
 
 	// KeyListener-Methoden (nur keyPressed relevant)
@@ -78,24 +86,49 @@ public class TerraPanel extends JPanel implements KeyListener {
 		doSubdivideTriangles();
 
 		switch (e.getExtendedKeyCode()) {
-		// y-axis rotation
-		case KeyEvent.VK_A:
-		case KeyEvent.VK_NUMPAD4:
-			beta -= Math.PI / 100;
-			break;
-		case KeyEvent.VK_D:
-		case KeyEvent.VK_NUMPAD6:
-			beta += Math.PI / 100;
-			break;
+
 		// x-axis rotation
 		case KeyEvent.VK_NUMPAD2:
 		case KeyEvent.VK_S:
-			alpha -= Math.PI / 100;
+			alpha -= rotation_step;
+			if (alpha < 0)
+				alpha += twopi;
 			break;
 		case KeyEvent.VK_W:
 		case KeyEvent.VK_NUMPAD8:
-			alpha += Math.PI / 100;
+			alpha += rotation_step;
+			if (alpha > twopi)
+				alpha -= twopi;
 			break;
+
+		// y-axis rotation
+		case KeyEvent.VK_A:
+		case KeyEvent.VK_NUMPAD4:
+			beta -= rotation_step;
+			if (beta < 0)
+				beta += twopi;
+			break;
+		case KeyEvent.VK_D:
+		case KeyEvent.VK_NUMPAD6:
+			beta += rotation_step;
+			if (beta > twopi)
+				beta -= twopi;
+			break;
+
+		// z-axis rotation
+		case KeyEvent.VK_Q:
+		case KeyEvent.VK_NUMPAD7:
+			gamma -= rotation_step;
+			if (gamma < 0)
+				gamma += twopi;
+			break;
+		case KeyEvent.VK_E:
+		case KeyEvent.VK_NUMPAD9:
+			gamma += rotation_step;
+			if (gamma > twopi)
+				gamma -= twopi;
+			break;
+
 		// magnification
 		case KeyEvent.VK_PLUS:
 		case KeyEvent.VK_PAGE_UP:
@@ -105,26 +138,32 @@ public class TerraPanel extends JPanel implements KeyListener {
 		case KeyEvent.VK_PAGE_DOWN:
 			magnifier -= 50;
 			break;
-		// z-axis rotation
-		case KeyEvent.VK_E:
-		case KeyEvent.VK_NUMPAD9:
-			gamma += Math.PI / 100;
-			break;
-		case KeyEvent.VK_Q:
-		case KeyEvent.VK_NUMPAD7:
-			gamma -= Math.PI / 100;
-			break;
+
 		// reset rotation
 		case KeyEvent.VK_X:
 		case KeyEvent.VK_NUMPAD5:
-			alpha = beta = gamma = 0;
+			alpha = default_alpha;
+			beta = gamma = 0;
 			break;
+
 		// show help
 		case KeyEvent.VK_H:
 			showhelp = !showhelp;
 			break;
+
+		// show local coordinate system axes
 		case KeyEvent.VK_C:
 			showaxis = !showaxis;
+			break;
+
+		// show vertex coordinates
+		case KeyEvent.VK_V:
+			drawvertexcoordinates = !drawvertexcoordinates;
+			break;
+
+		// Exit application
+		case KeyEvent.VK_ESCAPE:
+			System.exit(0);
 			break;
 		}
 
@@ -165,60 +204,32 @@ public class TerraPanel extends JPanel implements KeyListener {
 		// Draw lines - don't care about triangles, just draw all edges
 		g.setColor(Color.BLUE);
 		for (Edge edge : kanten) {
-			// Get vertices of current edge
-			Vertex va = edge.p1;
-			Vertex vb = edge.p2;
-			// Get coordinates for p1
-			double ax = va.x;
-			double ay = va.y;
-			double az = va.z;
-			// Get coordinates for p2
-			double bx = vb.x;
-			double by = vb.y;
-			double bz = vb.z;
+			// Do rotation and apply perspective
+			Edge screenedge = rotate_perspective(edge);
+			double nax = screenedge.p1.x;
+			double nay = screenedge.p1.y;
+			double naz = screenedge.p1.z;
+			double nbx = screenedge.p2.x;
+			double nby = screenedge.p2.y;
+			double nbz = screenedge.p2.z;
 
-			// Isometric transformation of vertex coordinates for rotation of
-			// x-axis (alpha), y-axis (beta) and z-axis (gamma)
-			// -- Rotate Alpha first
-			// -- -- Vertex a
-			double nax = ax;
-			double nay = Math.cos(alpha) * ay - Math.sin(alpha) * az;
-			double naz = Math.cos(alpha) * az + Math.sin(alpha) * ay;
-			// -- -- Vertex B
-			double nbx = bx;
-			double nby = Math.cos(alpha) * by - Math.sin(alpha) * bz;
-			double nbz = Math.cos(alpha) * bz + Math.sin(alpha) * by;
-
-			// -- Rotate Beta secondly on top of alpha rotation
-			// -- Vertex A
-			ax = Math.cos(beta) * nax + Math.sin(beta) * naz;
-			ay = nay;
-			az = Math.cos(beta) * naz - Math.sin(beta) * nax;
-			// -- Vertex B
-			bx = Math.cos(beta) * nbx + Math.sin(beta) * nbz;
-			by = nby;
-			bz = Math.cos(beta) * nbz - Math.sin(beta) * nbx;
-
-			// -- Rotate Gamma last on top of beta rotation
-			// -- Vertex A
-			nax = Math.cos(gamma) * ax - Math.sin(gamma) * ay;
-			nay = Math.cos(gamma) * ay + Math.sin(gamma) * ax;
-			naz = az;
-			// -- Vertex B
-			nbx = Math.cos(gamma) * bx - Math.sin(gamma) * by;
-			nby = Math.cos(gamma) * by + Math.sin(gamma) * bx;
-			nbz = bz;
-
-			// Apply perspective adjustment
-			nax = nax * persp_eye / (persp_eye + persp_model + naz);
-			nay = nay * persp_eye / (persp_eye + persp_model + naz);
-			nbx = nbx * persp_eye / (persp_eye + persp_model + nbz);
-			nby = nby * persp_eye / (persp_eye + persp_model + nbz);
+			// Transform coordinates to screen presentation (zoom, center)
+			int bax = (int) (nax * magnifier + xoff);
+			int bay = (int) (-nay * magnifier + yoff);
+			int bbx = (int) (nbx * magnifier + xoff);
+			int bby = (int) (-nby * magnifier + yoff);
 
 			// Actual drawing
-			// if vertex label is "x" this marks the local x,y and z axes (coordinate
-			// system)...
-			if ( ( showaxis == true ) && ( va.label == 'x' || va.label == 'y' || va.label == 'z' )) {
+			g.drawLine(bax, bay, bbx, bby);
+			string2draw = Character.toString(edge.p1.label);
+			if (drawvertexcoordinates) {
+				string2draw += " (" + Math.round(nax * 100);
+				string2draw += "/" + Math.round(nay * 100);
+				string2draw += "/" + Math.round(naz * 100) + ")";
+			}
+			g.drawString(string2draw, bax - 3, bay - 5);
+
+//			if ((showaxis == true) && (va.label == 'x' || va.label == 'y' || va.label == 'z')) {
 //				// Transform coordinates to screen presentation, for axes without magnification
 //				int bax = (int) (nax * 100);
 //				int bay = (int) (-nay * 100);
@@ -230,38 +241,83 @@ public class TerraPanel extends JPanel implements KeyListener {
 ////				g.drawString(nodes.get(ndB).id, bbx + 60 - 3, bby + 60 - 5);
 ////				g.drawLine(60, 60, bcx + 60, bcy + 60);
 ////				g.drawString(nodes.get(ndC).id, bcx + 60 - 3, bcy + 60 - 5);
-			} else {
-				// ... all other triangles are real triangles
-				// Transform coordinates to screen presentation
-				int bax = (int) (nax * magnifier + xoff);
-				int bay = (int) (-nay * magnifier + yoff);
-				int bbx = (int) (nbx * magnifier + xoff);
-				int bby = (int) (-nby * magnifier + yoff);
-				g.drawLine(bax, bay, bbx, bby);
-				g.drawString(Character.toString(va.label), bax - 3, bay - 5);
-//				G.DRAWLINE(BBX, BBY, BCX, BCY);
-//				G.DRAWSTRING(NODES.GET(NDB).ID, BBX - 3, BBY - 5);
-//				G.DRAWLINE(BCX, BCY, BAX, BAY);
-//				G.DRAWSTRING(NODES.GET(NDC).ID, BCX - 3, BCY - 5);
-			}
 		}
+
+		// Draw help info and rotation angles
+		string2draw = "Rotation: x/y/z: ";
+		string2draw += Math.round(Math.toDegrees(alpha)) + " / ";
+		string2draw += Math.round(Math.toDegrees(beta)) + " / ";
+		string2draw += Math.round(Math.toDegrees(gamma));
+		g.drawString(string2draw, 10, 150);
+		g.drawString("Press h for help", 10, 180);
+
 		// Draw help info on screen showing key combinations
 		if (showhelp) {
-			Font currentfont = g.getFont();
-			g.setFont(new Font("SansSerif", Font.PLAIN, 20));
-			g.drawString("W,S: Rotate x-axis", 10, 150);
-			g.drawString("A,D: Rotate y-axis", 10, 180);
-			g.drawString("Q,E: Rotate z-axis", 10, 210);
-			g.drawString("X: Reset rotation", 10, 240);
-			g.drawString("H: Display this help on,off", 10, 270);
-			g.drawString("C: Display local x,y,z axis", 10, 300);
-			g.setFont(currentfont);
+			g.drawString("W,S: Rotate x-axis", 10, 210);
+			g.drawString("A,D: Rotate y-axis", 10, 240);
+			g.drawString("Q,E: Rotate z-axis", 10, 270);
+			g.drawString("+,-: Zoom in and out", 10, 300);
+			g.drawString(" X : Reset rotation", 10, 330);
+			g.drawString(" C : Display local x,y,z axis: " + showaxis, 10, 360);
+			g.drawString(" V : Display vertex coordinates: " + drawvertexcoordinates, 10, 390);
+			g.drawString("ESC: Exit", 10, 420);
 		}
 
 	}
 
-	ArrayList<Edge> edges = new ArrayList<>();
-	String edgeID;
+	private Edge rotate_perspective(Edge rawedge) {
+		// Get vertices of current edge
+		Vertex va = rawedge.p1;
+		Vertex vb = rawedge.p2;
+		// Get coordinates for p1
+		double ax = va.x;
+		double ay = va.y;
+		double az = va.z;
+		// Get coordinates for p2
+		double bx = vb.x;
+		double by = vb.y;
+		double bz = vb.z;
+
+		// Isometric transformation of vertex coordinates for rotation of x-axis
+		// (alpha), y-axis (beta) and z-axis (gamma)
+		// -- Rotate Alpha first
+		// -- -- Vertex a
+		double nax = ax;
+		double nay = Math.cos(alpha) * ay + Math.sin(alpha) * az;
+		double naz = Math.cos(alpha) * az - Math.sin(alpha) * ay;
+		// -- -- Vertex B
+		double nbx = bx;
+		double nby = Math.cos(alpha) * by + Math.sin(alpha) * bz;
+		double nbz = Math.cos(alpha) * bz - Math.sin(alpha) * by;
+
+		// -- Rotate Beta secondly on top of alpha rotation
+		// -- Vertex A
+		ax = Math.cos(beta) * nax + Math.sin(beta) * naz;
+		ay = nay;
+		az = Math.cos(beta) * naz - Math.sin(beta) * nax;
+		// -- Vertex B
+		bx = Math.cos(beta) * nbx + Math.sin(beta) * nbz;
+		by = nby;
+		bz = Math.cos(beta) * nbz - Math.sin(beta) * nbx;
+
+		// -- Rotate Gamma last on top of beta rotation
+		// -- Vertex A
+		nax = Math.cos(gamma) * ax - Math.sin(gamma) * ay;
+		nay = Math.cos(gamma) * ay + Math.sin(gamma) * ax;
+		naz = az;
+		// -- Vertex B
+		nbx = Math.cos(gamma) * bx - Math.sin(gamma) * by;
+		nby = Math.cos(gamma) * by + Math.sin(gamma) * bx;
+		nbz = bz;
+
+		// Apply perspective adjustment
+		nax = nax * persp_eye / (persp_eye + persp_model + naz);
+		nay = nay * persp_eye / (persp_eye + persp_model + naz);
+		nbx = nbx * persp_eye / (persp_eye + persp_model + nbz);
+		nby = nby * persp_eye / (persp_eye + persp_model + nbz);
+
+		return rawedge;
+	}
 
 	private void doSubdivideTriangles() {
 		for (Triangle tri : triangles) {
