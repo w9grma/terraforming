@@ -12,4 +12,8 @@ public class Vertex {
 		this.z = z;
 		this.label = label;
 	}
+
+	public Vertex(double x, double y, double z) {
+		this(x,y,z,'\0');
+	}
 }

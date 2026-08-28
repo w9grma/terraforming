@@ -31,6 +31,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 	boolean showhelp = false;
 	boolean showaxis = true;
 	boolean drawvertexcoordinates = false;
+	boolean showvertexnames = true;
 
 	// Konstruktor
 	public TerraPanel() {
@@ -57,21 +58,20 @@ public class TerraPanel extends JPanel implements KeyListener {
 		triangles.add(tabc);
 
 		// Add special vertices, edges and triangle for local xyz axes
-//		Vertex v0 = new Vertex(0, 0, 0, '0');
-//		vertices.add(v0);
-//		Vertex vx = new Vertex(1, 0, 0, 'x');
-//		vertices.add(vx);
-//		Vertex vy = new Vertex(0, 1, 0, 'y');
-//		vertices.add(vy);
-//		Vertex vz = new Vertex(0, 0, 1, 'z');
-//		vertices.add(vz);
-//		Edge e0x = new Edge(v0, vx);
-//		kanten.add(e0x);
-//		Edge e0y = new Edge(v0, vy);
-//		kanten.add(e0y);
-//		Edge e0z = new Edge(v0, vz);
-//		kanten.add(e0z);
-//		triangles.add(new Triangle(e0x, e0y, e0z));
+		Vertex v0 = new Vertex(0, 0, 0, '0');
+		vertices.add(v0);
+		Vertex vx = new Vertex(0.1, 0, 0, 'x');
+		vertices.add(vx);
+		Vertex vy = new Vertex(0, 0.1, 0, 'y');
+		vertices.add(vy);
+		Vertex vz = new Vertex(0, 0, 0.1, 'z');
+		vertices.add(vz);
+		Edge e0x = new Edge(vx, v0);
+		kanten.add(e0x);
+		Edge e0y = new Edge(vy, v0);
+		kanten.add(e0y);
+		Edge e0z = new Edge(vz, v0);
+		kanten.add(e0z);
 
 		setBackground(Color.WHITE);
 		setFont(new Font("Monospaced", Font.PLAIN, 16));
@@ -82,8 +82,6 @@ public class TerraPanel extends JPanel implements KeyListener {
 	// KeyListener-Methoden (nur keyPressed relevant)
 	@Override
 	public void keyPressed(KeyEvent e) {
-
-		doSubdivideTriangles();
 
 		switch (e.getExtendedKeyCode()) {
 
@@ -161,6 +159,16 @@ public class TerraPanel extends JPanel implements KeyListener {
 			drawvertexcoordinates = !drawvertexcoordinates;
 			break;
 
+		// subdivide
+		case KeyEvent.VK_SPACE:
+			doSubdivideTriangles();
+			break;
+
+		// show vertex names
+		case KeyEvent.VK_N:
+			showvertexnames = !showvertexnames;
+			break;
+
 		// Exit application
 		case KeyEvent.VK_ESCAPE:
 			System.exit(0);
@@ -205,42 +213,38 @@ public class TerraPanel extends JPanel implements KeyListener {
 		g.setColor(Color.BLUE);
 		for (Edge edge : kanten) {
 			// Do rotation and apply perspective
-			Edge screenedge = rotate_perspective(edge);
-			double nax = screenedge.p1.x;
-			double nay = screenedge.p1.y;
-			double naz = screenedge.p1.z;
-			double nbx = screenedge.p2.x;
-			double nby = screenedge.p2.y;
-			double nbz = screenedge.p2.z;
+			Vertex va = edge.p1;
+			Vertex vb = edge.p2;
+			Vertex rva = rotate(va);
+			Vertex rvb = rotate(vb);
 
-			// Transform coordinates to screen presentation (zoom, center)
-			int bax = (int) (nax * magnifier + xoff);
-			int bay = (int) (-nay * magnifier + yoff);
-			int bbx = (int) (nbx * magnifier + xoff);
-			int bby = (int) (-nby * magnifier + yoff);
+			// Apply perspective adjustment Vertex a and b
+			double prvax = rva.x * persp_eye / (persp_eye + persp_model + rva.z);
+			double prvay = rva.y * persp_eye / (persp_eye + persp_model + rva.z);
+			double prvbx = rvb.x * persp_eye / (persp_eye + persp_model + rvb.z);
+			double prvby = rvb.y * persp_eye / (persp_eye + persp_model + rvb.z);
+
+			// Adjust coordinates for screen presentation (zoom, center)
+			int bax = (int) (prvax * magnifier + xoff);
+			int bay = (int) (-prvay * magnifier + yoff);
+			int bbx = (int) (prvbx * magnifier + xoff);
+			int bby = (int) (-prvby * magnifier + yoff);
 
 			// Actual drawing
-			g.drawLine(bax, bay, bbx, bby);
-			string2draw = Character.toString(edge.p1.label);
-			if (drawvertexcoordinates) {
-				string2draw += " (" + Math.round(nax * 100);
-				string2draw += "/" + Math.round(nay * 100);
-				string2draw += "/" + Math.round(naz * 100) + ")";
+			if (showaxis || (va.label != 'x' && va.label != 'y' && va.label != 'z')) {
+				g.drawLine(bax, bay, bbx, bby);
+				if (showvertexnames)
+					string2draw = Character.toString(edge.p1.label);
+				else
+					string2draw = "";
+				if (drawvertexcoordinates) {
+					string2draw += " (" + Math.round(rva.x * 100);
+					string2draw += "/" + Math.round(rva.y * 100);
+					string2draw += "/" + Math.round(rva.z * 100) + ")";
+				}
+				if (!string2draw.isEmpty())
+					g.drawString(string2draw, bax - 3, bay - 5);
 			}
-			g.drawString(string2draw, bax - 3, bay - 5);
-
-//			if ((showaxis == true) && (va.label == 'x' || va.label == 'y' || va.label == 'z')) {
-//				// Transform coordinates to screen presentation, for axes without magnification
-//				int bax = (int) (nax * 100);
-//				int bay = (int) (-nay * 100);
-//				int bbx = (int) (nbx * 100);
-//				int bby = (int) (-nby * 100);
-//				g.drawLine(60, 60, bax + 60, bay + 60);
-//				g.drawString(Character.toString(vb.label), bax + 60 - 3, bay + 60 - 5);
-////				g.drawLine(60, 60, bbx + 60, bby + 60);
-////				g.drawString(nodes.get(ndB).id, bbx + 60 - 3, bby + 60 - 5);
-////				g.drawLine(60, 60, bcx + 60, bcy + 60);
-////				g.drawString(nodes.get(ndC).id, bcx + 60 - 3, bcy + 60 - 5);
 		}
 
 		// Draw help info and rotation angles
@@ -260,83 +264,51 @@ public class TerraPanel extends JPanel implements KeyListener {
 			g.drawString(" X : Reset rotation", 10, 330);
 			g.drawString(" C : Display local x,y,z axis: " + showaxis, 10, 360);
 			g.drawString(" V : Display vertex coordinates: " + drawvertexcoordinates, 10, 390);
-			g.drawString("ESC: Exit", 10, 420);
+			g.drawString(" N : Display vertex names: " + showvertexnames, 10, 420);
+			g.drawString("ESC: Exit", 10, 450);
 		}
 
 	}
 
-	private Edge rotate_perspective(Edge rawedge) {
-		// Get vertices of current edge
-		Vertex va = rawedge.p1;
-		Vertex vb = rawedge.p2;
-		// Get coordinates for p1
-		double ax = va.x;
-		double ay = va.y;
-		double az = va.z;
-		// Get coordinates for p2
-		double bx = vb.x;
-		double by = vb.y;
-		double bz = vb.z;
+	private Vertex rotate(Vertex vx) {
+		// Get coordinates
+		double ax = vx.x;
+		double ay = vx.y;
+		double az = vx.z;
 
 		// Isometric transformation of vertex coordinates for rotation of x-axis
 		// (alpha), y-axis (beta) and z-axis (gamma)
 		// -- Rotate Alpha first
-		// -- -- Vertex a
 		double nax = ax;
 		double nay = Math.cos(alpha) * ay + Math.sin(alpha) * az;
 		double naz = Math.cos(alpha) * az - Math.sin(alpha) * ay;
-		// -- -- Vertex B
-		double nbx = bx;
-		double nby = Math.cos(alpha) * by + Math.sin(alpha) * bz;
-		double nbz = Math.cos(alpha) * bz - Math.sin(alpha) * by;
 
 		// -- Rotate Beta secondly on top of alpha rotation
-		// -- Vertex A
 		ax = Math.cos(beta) * nax + Math.sin(beta) * naz;
 		ay = nay;
 		az = Math.cos(beta) * naz - Math.sin(beta) * nax;
-		// -- Vertex B
-		bx = Math.cos(beta) * nbx + Math.sin(beta) * nbz;
-		by = nby;
-		bz = Math.cos(beta) * nbz - Math.sin(beta) * nbx;
 
 		// -- Rotate Gamma last on top of beta rotation
-		// -- Vertex A
 		nax = Math.cos(gamma) * ax - Math.sin(gamma) * ay;
 		nay = Math.cos(gamma) * ay + Math.sin(gamma) * ax;
 		naz = az;
-		// -- Vertex B
-		nbx = Math.cos(gamma) * bx - Math.sin(gamma) * by;
-		nby = Math.cos(gamma) * by + Math.sin(gamma) * bx;
-		nbz = bz;
 
-		// Apply perspective adjustment
-		nax = nax * persp_eye / (persp_eye + persp_model + naz);
-		nay = nay * persp_eye / (persp_eye + persp_model + naz);
-		nbx = nbx * persp_eye / (persp_eye + persp_model + nbz);
-		nby = nby * persp_eye / (persp_eye + persp_model + nbz);
-
-		return rawedge;
+		return new Vertex(nax, nay, naz, vx.label);
 	}
 
 	private void doSubdivideTriangles() {
-		for (Triangle tri : triangles) {
-			// get Node indexes
-//			int ndA = tri.vertexes[0];
-//			int ndB = tri.vertexes[1];
-//			int ndC = tri.vertexes[2];
-//
-//			// Determine edges
-//			String fromID = nodes.get(ndA).id;
-//			String toID = nodes.get(ndB).id;
-//			if (fromID.compareTo(toID) < 0) {
-//				edgeID = fromID + "|" + toID;
-//			} else {
-//				edgeID = toID + "|" + fromID;
-//			}
-//			;
-//			if (edges.contains(new Edge(edgeID)))
-//				;
+		// first of all we need the existing edges to be split in two edges of same length. middle (shared) vertex gets adjusted in height
+		for (Edge edge : kanten) {
+			// new vertex gets average of all coordinates
+			edge.pm.x = (edge.p1.x + edge.p2.x) / 2;
+			edge.pm.y = (edge.p1.y + edge.p2.y) / 2;
+			edge.pm.z = (edge.p1.z + edge.p2.z) / 2;
+			
+			// new vertex coordinates are adjusted randomly in height
+			//  random() * 2 - 1
+			double deltaz = Math.random() * 0.1 * edge.pm.z;
+			
+		
 		}
 	}
 }
