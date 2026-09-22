@@ -14,14 +14,16 @@ public class TerraPanel extends JPanel implements KeyListener {
 	private static final long serialVersionUID = -1085629251417172686L;
 
 	// Datenmodell
-	final ArrayList<Vertex> vertices = new ArrayList<>();
-	final ArrayList<Triangle> triangles = new ArrayList<>();
-	final ArrayList<Edge> kanten = new ArrayList<>();
-	double magnifier = 1000;
+	int iterations = 0;
+	ArrayList<Vertex> vertices = new ArrayList<>();
+	ArrayList<Triangle> triangles = new ArrayList<>();
+	ArrayList<Edge> kanten = new ArrayList<>();
+	double magnifier = 5000;
 	double alpha = 0; // Drehung um x
 	double beta = 0; // Drehung um y
 	double gamma = 0; // Drehung um z
 	final double default_alpha = Math.toRadians(45);
+	final double default_beta = Math.toRadians(45);
 	final double rotation_step = Math.toRadians(2);
 	final double pi = Math.PI;
 	final double twopi = 2 * Math.PI;
@@ -32,33 +34,32 @@ public class TerraPanel extends JPanel implements KeyListener {
 	boolean showaxis = true;
 	boolean drawvertexcoordinates = false;
 	boolean showvertexnames = true;
+	char vertexLabel;
 
-	// Konstruktor
-	public TerraPanel() {
+	public char getVertexLabelNext() {
+		if (vertexLabel < 'w') {
+			vertexLabel++;
+			return vertexLabel;
+		} else {
+			return ' ';
+		}
+	}
 
-		addKeyListener(this); // KeyListener aktivieren
-		setFocusable(true); // Panel kann Fokus erhalten
+	public void resetVertexLabel() {
+		vertexLabel = 'A';
+		vertexLabel--;
+	}
 
-		// 1. Initial triangle ABC
-		Vertex va = new Vertex(-Math.cos(pi / 6) / 2, 0, -0.25, 'A'); // (cos pi/6) / 2 = 0,433...
-		vertices.add(va);
-		Vertex vb = new Vertex(Math.cos(pi / 6) / 2, 0, -0.25, 'B');
-		vertices.add(vb);
-		Vertex vc = new Vertex(0, 0, 0.5, 'C');
-		vertices.add(vc);
+	public void initGridData() {
+		// Empty lists
+		triangles.clear();
+		kanten.clear();
+		vertices.clear();
 
-		Edge eab = new Edge(va, vb);
-		kanten.add(eab);
-		Edge ebc = new Edge(vb, vc);
-		kanten.add(ebc);
-		Edge eca = new Edge(vc, va);
-		kanten.add(eca);
-
-		Triangle tabc = new Triangle(eab, ebc, eca);
-		triangles.add(tabc);
+		resetVertexLabel();
 
 		// Add special vertices, edges and triangle for local xyz axes
-		Vertex v0 = new Vertex(0, 0, 0, '0');
+		Vertex v0 = new Vertex(0, 0, 0);
 		vertices.add(v0);
 		Vertex vx = new Vertex(0.1, 0, 0, 'x');
 		vertices.add(vx);
@@ -73,10 +74,40 @@ public class TerraPanel extends JPanel implements KeyListener {
 		Edge e0z = new Edge(vz, v0);
 		kanten.add(e0z);
 
+		// 1. Initial triangle ABC
+		Vertex va = new Vertex(-Math.cos(pi / 6) / 2, 0, -0.25, getVertexLabelNext()); // (cos pi/6) / 2 = 0,433...
+		vertices.add(va);
+		Vertex vb = new Vertex(Math.cos(pi / 6) / 2, 0, -0.25, getVertexLabelNext());
+		vertices.add(vb);
+		Vertex vc = new Vertex(0, 0, 0.5, getVertexLabelNext());
+		vertices.add(vc);
+
+		Edge eab = new Edge(va, vb);
+		kanten.add(eab);
+		Edge ebc = new Edge(vb, vc);
+		kanten.add(ebc);
+		Edge eca = new Edge(vc, va);
+		kanten.add(eca);
+
+		Triangle tabc = new Triangle(eab, ebc, eca);
+		triangles.add(tabc);
+
+		iterations = 0;
+	}
+
+	// Konstruktor
+	public TerraPanel() {
+
+		addKeyListener(this); // KeyListener aktivieren
+		setFocusable(true); // Panel kann Fokus erhalten
+
 		setBackground(Color.WHITE);
-		setFont(new Font("Monospaced", Font.PLAIN, 16));
+		setFont(new Font("Monospaced", Font.PLAIN, 20));
 
 		alpha = default_alpha;
+		beta = default_beta;
+
+		initGridData();
 	}
 
 	// KeyListener-Methoden (nur keyPressed relevant)
@@ -137,11 +168,17 @@ public class TerraPanel extends JPanel implements KeyListener {
 			magnifier -= 50;
 			break;
 
-		// reset rotation
+		// reset rotation 
 		case KeyEvent.VK_X:
 		case KeyEvent.VK_NUMPAD5:
 			alpha = default_alpha;
-			beta = gamma = 0;
+			beta = default_beta;
+			gamma = 0;
+			break;
+
+		// reset iteration (complete grid reset to default)
+		case KeyEvent.VK_R:
+			initGridData();
 			break;
 
 		// show help
@@ -197,9 +234,9 @@ public class TerraPanel extends JPanel implements KeyListener {
 		int xoff = (int) x / 2;
 
 		// Draw helper lines and circle on the screen
-//		g.drawLine(0, 0, x, y);
-//		g.drawLine(0, yoff, x, yoff);
-//		g.drawLine(xoff, 0, xoff, y);
+		//		g.drawLine(0, 0, x, y);
+		//		g.drawLine(0, yoff, x, yoff);
+		//		g.drawLine(xoff, 0, xoff, y);
 
 		// Draw global x, y and z axes
 		g.drawLine(10, y - 10, 110, y - 10);
@@ -248,24 +285,46 @@ public class TerraPanel extends JPanel implements KeyListener {
 		}
 
 		// Draw help info and rotation angles
+		int drawline = 150;
 		string2draw = "Rotation: x/y/z: ";
 		string2draw += Math.round(Math.toDegrees(alpha)) + " / ";
 		string2draw += Math.round(Math.toDegrees(beta)) + " / ";
 		string2draw += Math.round(Math.toDegrees(gamma));
-		g.drawString(string2draw, 10, 150);
-		g.drawString("Press h for help", 10, 180);
+		g.drawString(string2draw, 10, drawline);
+		drawline += 30;
+		string2draw = "Iterationen / Dreiecke / Kanten / Punkte: ";
+		string2draw += iterations + " / ";
+		string2draw += triangles.size() + " / ";
+		string2draw += kanten.size() - 3 + " / "; // substract edges for local coordinate system
+		string2draw += vertices.size() - 4; // substract vertices for local coordinate system
+		g.drawString(string2draw, 10, drawline);
+		drawline += 30;
+
+		g.drawString("Press h for help", 10, drawline);
+		drawline += 30;
 
 		// Draw help info on screen showing key combinations
 		if (showhelp) {
-			g.drawString("W,S: Rotate x-axis", 10, 210);
-			g.drawString("A,D: Rotate y-axis", 10, 240);
-			g.drawString("Q,E: Rotate z-axis", 10, 270);
-			g.drawString("+,-: Zoom in and out", 10, 300);
-			g.drawString(" X : Reset rotation", 10, 330);
-			g.drawString(" C : Display local x,y,z axis: " + showaxis, 10, 360);
-			g.drawString(" V : Display vertex coordinates: " + drawvertexcoordinates, 10, 390);
-			g.drawString(" N : Display vertex names: " + showvertexnames, 10, 420);
-			g.drawString("ESC: Exit", 10, 450);
+			g.drawString("W,S: Rotate x-axis", 10, drawline);
+			drawline += 30;
+			g.drawString("A,D: Rotate y-axis", 10, drawline);
+			drawline += 30;
+			g.drawString("Q,E: Rotate z-axis", 10, drawline);
+			drawline += 30;
+			g.drawString("+,-: Zoom in and out", 10, drawline);
+			drawline += 30;
+			g.drawString(" X : Reset rotation", 10, drawline);
+			drawline += 30;
+			g.drawString(" C : Display local x,y,z axis: " + showaxis, 10, drawline);
+			drawline += 30;
+			g.drawString(" V : Display vertex coordinates: " + drawvertexcoordinates, 10, drawline);
+			drawline += 30;
+			g.drawString(" N : Display vertex names: " + showvertexnames, 10, drawline);
+			drawline += 30;
+			g.drawString("ESC: Exit", 10, drawline);
+			drawline += 30;
+			g.drawString("SPC: Do Subdivide!", 10, drawline);
+			drawline += 30;
 		}
 
 	}
@@ -297,18 +356,98 @@ public class TerraPanel extends JPanel implements KeyListener {
 	}
 
 	private void doSubdivideTriangles() {
-		// first of all we need the existing edges to be split in two edges of same length. middle (shared) vertex gets adjusted in height
+		iterations++;
+		// first of all we need the existing edges to be split in two edges of same
+		// length. middle (shared) vertex gets adjusted in height
 		for (Edge edge : kanten) {
-			// new vertex gets average of all coordinates
-			edge.pm.x = (edge.p1.x + edge.p2.x) / 2;
-			edge.pm.y = (edge.p1.y + edge.p2.y) / 2;
-			edge.pm.z = (edge.p1.z + edge.p2.z) / 2;
-			
-			// new vertex coordinates are adjusted randomly in height
-			//  random() * 2 - 1
-			double deltaz = Math.random() * 0.1 * edge.pm.z;
-			
-		
+
+			// do not sub-divide local coordinate system edges
+			if (edge.p1.label == 'x' || edge.p1.label == 'y' || edge.p1.label == 'z')
+				continue;
+
+			// check if middle vertex already processed for another triangle using the same edge
+			if (edge.pm == null) {
+				// new vertex gets average of all coordinates
+				edge.pm = new Vertex(0, 0, 0, getVertexLabelNext());
+				vertices.add(edge.pm);
+				edge.pm.x = (edge.p1.x + edge.p2.x) / 2;
+				edge.pm.y = (edge.p1.y + edge.p2.y) / 2;
+				edge.pm.z = (edge.p1.z + edge.p2.z) / 2;
+
+				// new vertex coordinates are adjusted randomly in height, i.e. y-dimension
+				double deltah = (Math.random() - 0.5) * 0.2;
+				deltah = deltah / iterations / iterations; // reduce change in height according to progress in iterations
+				edge.pm.y += deltah;
+			}
 		}
+
+		// with the help of the new middle vertices we can construct the new triangles
+		// Loop over all existing triangles, for each construct the 4 new successors
+		ArrayList<Triangle> newtriangles = new ArrayList<>();
+		ArrayList<Edge> newedges = new ArrayList<>();
+
+		// at first add edges of local coordinate system to the temporary lists
+		newedges.add(kanten.get(0));
+		newedges.add(kanten.get(1));
+		newedges.add(kanten.get(2));
+
+		int i = 0;
+		for (Triangle told : triangles) {
+			i++;
+			// get the 3 edges and tree vertices first, do not respect any order or orientation
+			ArrayList<Vertex> toldvert = told.getVertices(told);
+			ArrayList<Edge> toldedges = new ArrayList<>();
+			toldedges.add(told.e1);
+			toldedges.add(told.e2);
+			toldedges.add(told.e2);
+
+			String triname = "";
+			for (Vertex v : toldvert)
+				triname += v.label;
+			System.out.println("Processing triangle " + i + ": " + triname);
+
+			// Now that we have got the 3 vertices and 3 edges for the current triangle in temporary ArrayLists  
+			// let's construct the 4 child triangles but do NOT pay attention to any sequence of vertices or edges  
+			// or even orientation of the edges. Vertices and edges are placed in the Lists in a random order.
+			// Idea: 1. Loop through the vertices 
+			//       2. Find the two edges connected with current vertex
+			//       3. Construct child triangle located next to the current vertexes corner of mother triangle
+			//			a Loop over the two edges of 2) and create a new edges for both 
+			// 			  with end points current vertex and middle point of old edge (check if edge already created for neighbor triangle)
+			//			b Create a new edge with end points as the two middle points of the two old edges
+			//			c Remember the new edge of 2b) for the inner new child triangle
+			//       4. Construct child triangle located in the middle of the mother triangle with the help of 3c)
+
+			ArrayList<Edge> eadjacent = new ArrayList<>();
+			for (Vertex v : toldvert) {
+				// 2) Find the two adjacent edges (of the 3 existing) for the current vertex
+				for (Edge e : toldedges) {
+					if (e.p1 == v || e.p2 == v) {
+						eadjacent.add(e);
+					}
+				}
+				if (eadjacent.size() != 2)
+					System.out.println(
+							"Fehler! Beim Subidivide konnten zu einer Ecke die zugehörigen anliegenden Kanten nicht gefunden werden.");
+
+				// 3) Construct the three edges for the child triangle adjacent to the current corner (vertex) of the mother triangle
+				Edge ena = new Edge(v, eadjacent.get(0).pm);
+				Edge enb = new Edge(v, eadjacent.get(1).pm);
+				Edge enc = new Edge(eadjacent.get(0).pm, eadjacent.get(1).pm);
+				Triangle tnew = new Triangle(ena, enb, enc);
+
+				// Save new edges and triangle to the temporary list
+				newedges.add(ena);
+				newedges.add(enb);
+				newedges.add(enc);
+				newtriangles.add(tnew);
+			}
+		}
+
+		System.out.println("----------------------------------------------");
+
+		// Throw away old items and take over the new ones, vertices stay the same,no need to replace them
+		triangles = newtriangles;
+		kanten = newedges;
 	}
 }

@@ -14,6 +14,6 @@ public class Vertex {
 	}
 
 	public Vertex(double x, double y, double z) {
-		this(x,y,z,'\0');
+		this(x, y, z, '\0');
 	}
 }
