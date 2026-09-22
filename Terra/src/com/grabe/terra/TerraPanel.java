@@ -385,7 +385,9 @@ public class TerraPanel extends JPanel implements KeyListener {
 		// Loop over all existing triangles, for each construct the 4 new successors
 		ArrayList<Triangle> newtriangles = new ArrayList<>();
 		ArrayList<Edge> newedges = new ArrayList<>();
-
+		ArrayList<Edge> eadjacent = new ArrayList<>();
+		ArrayList<Edge> einnertriangle = new ArrayList<>();
+		
 		// at first add edges of local coordinate system to the temporary lists
 		newedges.add(kanten.get(0));
 		newedges.add(kanten.get(1));
@@ -399,7 +401,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 			ArrayList<Edge> toldedges = new ArrayList<>();
 			toldedges.add(told.e1);
 			toldedges.add(told.e2);
-			toldedges.add(told.e2);
+			toldedges.add(told.e3);
 
 			String triname = "";
 			for (Vertex v : toldvert)
@@ -418,9 +420,10 @@ public class TerraPanel extends JPanel implements KeyListener {
 			//			c Remember the new edge of 2b) for the inner new child triangle
 			//       4. Construct child triangle located in the middle of the mother triangle with the help of 3c)
 
-			ArrayList<Edge> eadjacent = new ArrayList<>();
+			einnertriangle.clear();
 			for (Vertex v : toldvert) {
 				// 2) Find the two adjacent edges (of the 3 existing) for the current vertex
+				eadjacent.clear();
 				for (Edge e : toldedges) {
 					if (e.p1 == v || e.p2 == v) {
 						eadjacent.add(e);
@@ -428,7 +431,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 				}
 				if (eadjacent.size() != 2)
 					System.out.println(
-							"Fehler! Beim Subidivide konnten zu einer Ecke die zugehörigen anliegenden Kanten nicht gefunden werden.");
+							"Fehler! Beim Subdivide konnten zu einer Ecke die zugehörigen anliegenden Kanten nicht gefunden werden.");
 
 				// 3) Construct the three edges for the child triangle adjacent to the current corner (vertex) of the mother triangle
 				Edge ena = new Edge(v, eadjacent.get(0).pm);
@@ -441,7 +444,13 @@ public class TerraPanel extends JPanel implements KeyListener {
 				newedges.add(enb);
 				newedges.add(enc);
 				newtriangles.add(tnew);
+				
+				// 3c) remember edge for inner triangle
+				einnertriangle.add(enc);
 			}
+			// 4) create inner triangle and add it
+			Triangle tnew = new Triangle(einnertriangle.get(0), einnertriangle.get(1), einnertriangle.get(2));
+			newtriangles.add(tnew);
 		}
 
 		System.out.println("----------------------------------------------");
