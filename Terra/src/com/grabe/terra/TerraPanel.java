@@ -305,7 +305,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 		g.drawString("Kanten: " + (kanten.size() - 3) + " (e " + noedges + ")", 10, drawline); // substract 3 from real value for the local coord. system
 
 		drawline += 30;
-		Double novert = Math.pow(2, iterations +1 );
+		Double novert = Math.pow(2, iterations) + 1;
 		novert = (novert * novert / 2 + novert / 2);
 		g.drawString("Punkte: " + (vertices.size() - 4) + "(e " + novert + ")", 10, drawline); // substract 4 from real value for the local coord. system
 
@@ -389,6 +389,8 @@ public class TerraPanel extends JPanel implements KeyListener {
 				double deltah = (Math.random() - 0.5) * 0.2;
 				deltah = deltah / iterations / iterations; // reduce change in height according to progress in iterations
 				edge.pm.y += deltah;
+			} else {
+				System.out.println("Bereits geteilte Kante gefunden.");
 			}
 		}
 
