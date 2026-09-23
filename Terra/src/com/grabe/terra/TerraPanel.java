@@ -291,16 +291,27 @@ public class TerraPanel extends JPanel implements KeyListener {
 		string2draw += Math.round(Math.toDegrees(beta)) + " / ";
 		string2draw += Math.round(Math.toDegrees(gamma));
 		g.drawString(string2draw, 10, drawline);
-		drawline += 30;
-		string2draw = "Iterationen / Dreiecke / Kanten / Punkte: ";
-		string2draw += iterations + " / ";
-		string2draw += triangles.size() + " / ";
-		string2draw += kanten.size() - 3 + " / "; // substract edges for local coordinate system
-		string2draw += vertices.size() - 4; // substract vertices for local coordinate system
-		g.drawString(string2draw, 10, drawline);
-		drawline += 30;
 
+		drawline += 30;
+		g.drawString("Iterationen: " + iterations, 10, drawline);
+
+		drawline += 30;
+		Integer notriangles = (int) Math.pow(4, iterations);
+		g.drawString("Dreiecke: " + triangles.size() + " (erwartet " + notriangles + ")", 10, drawline);
+
+		drawline += 30;
+		Double noedges = Math.pow(2, iterations);
+		noedges = (noedges * noedges / 2 + noedges / 2) * 3;
+		g.drawString("Kanten: " + (kanten.size() - 3) + " (e " + noedges + ")", 10, drawline); // substract 3 from real value for the local coord. system
+
+		drawline += 30;
+		Double novert = Math.pow(2, iterations +1 );
+		novert = (novert * novert / 2 + novert / 2);
+		g.drawString("Punkte: " + (vertices.size() - 4) + "(e " + novert + ")", 10, drawline); // substract 4 from real value for the local coord. system
+
+		drawline += 50;
 		g.drawString("Press h for help", 10, drawline);
+
 		drawline += 30;
 
 		// Draw help info on screen showing key combinations
@@ -387,7 +398,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 		ArrayList<Edge> newedges = new ArrayList<>();
 		ArrayList<Edge> eadjacent = new ArrayList<>();
 		ArrayList<Edge> einnertriangle = new ArrayList<>();
-		
+
 		// at first add edges of local coordinate system to the temporary lists
 		newedges.add(kanten.get(0));
 		newedges.add(kanten.get(1));
@@ -444,7 +455,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 				newedges.add(enb);
 				newedges.add(enc);
 				newtriangles.add(tnew);
-				
+
 				// 3c) remember edge for inner triangle
 				einnertriangle.add(enc);
 			}
