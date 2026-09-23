@@ -6,7 +6,7 @@ public class Edge {
 	final Vertex p1;
 	final Vertex p2;
 	Vertex pm;
-	ArrayList<Edge> Newedges;
+	ArrayList<Edge> newedges;
 
 	public Edge(Vertex p1, Vertex p2) {
 		this.p1 = p1;

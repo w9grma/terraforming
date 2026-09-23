@@ -168,7 +168,7 @@ public class TerraPanel extends JPanel implements KeyListener {
 			magnifier -= 50;
 			break;
 
-		// reset rotation 
+		// reset rotation
 		case KeyEvent.VK_X:
 		case KeyEvent.VK_NUMPAD5:
 			alpha = default_alpha;
@@ -234,9 +234,9 @@ public class TerraPanel extends JPanel implements KeyListener {
 		int xoff = (int) x / 2;
 
 		// Draw helper lines and circle on the screen
-		//		g.drawLine(0, 0, x, y);
-		//		g.drawLine(0, yoff, x, yoff);
-		//		g.drawLine(xoff, 0, xoff, y);
+		// g.drawLine(0, 0, x, y);
+		// g.drawLine(0, yoff, x, yoff);
+		// g.drawLine(xoff, 0, xoff, y);
 
 		// Draw global x, y and z axes
 		g.drawLine(10, y - 10, 110, y - 10);
@@ -302,12 +302,16 @@ public class TerraPanel extends JPanel implements KeyListener {
 		drawline += 30;
 		Double noedges = Math.pow(2, iterations);
 		noedges = (noedges * noedges / 2 + noedges / 2) * 3;
-		g.drawString("Kanten: " + (kanten.size() - 3) + " (e " + noedges + ")", 10, drawline); // substract 3 from real value for the local coord. system
+		g.drawString("Kanten: " + (kanten.size() - 3) + " (e " + noedges + ")", 10, drawline); // substract 3 from real
+																								// value for the local
+																								// coord. system
 
 		drawline += 30;
 		Double novert = Math.pow(2, iterations) + 1;
 		novert = (novert * novert / 2 + novert / 2);
-		g.drawString("Punkte: " + (vertices.size() - 4) + "(e " + novert + ")", 10, drawline); // substract 4 from real value for the local coord. system
+		g.drawString("Punkte: " + (vertices.size() - 4) + "(e " + novert + ")", 10, drawline); // substract 4 from real
+																								// value for the local
+																								// coord. system
 
 		drawline += 50;
 		g.drawString("Press h for help", 10, drawline);
@@ -376,22 +380,18 @@ public class TerraPanel extends JPanel implements KeyListener {
 			if (edge.p1.label == 'x' || edge.p1.label == 'y' || edge.p1.label == 'z')
 				continue;
 
-			// check if middle vertex already processed for another triangle using the same edge
-			if (edge.pm == null) {
-				// new vertex gets average of all coordinates
-				edge.pm = new Vertex(0, 0, 0, getVertexLabelNext());
-				vertices.add(edge.pm);
-				edge.pm.x = (edge.p1.x + edge.p2.x) / 2;
-				edge.pm.y = (edge.p1.y + edge.p2.y) / 2;
-				edge.pm.z = (edge.p1.z + edge.p2.z) / 2;
+			System.out.println("Verarbeite Kante " + edge.p1.label + edge.p2.label);
+			// new vertex gets average of all coordinates
+			edge.pm = new Vertex(0, 0, 0, getVertexLabelNext());
+			vertices.add(edge.pm);
+			edge.pm.x = (edge.p1.x + edge.p2.x) / 2;
+			edge.pm.y = (edge.p1.y + edge.p2.y) / 2;
+			edge.pm.z = (edge.p1.z + edge.p2.z) / 2;
 
-				// new vertex coordinates are adjusted randomly in height, i.e. y-dimension
-				double deltah = (Math.random() - 0.5) * 0.2;
-				deltah = deltah / iterations / iterations; // reduce change in height according to progress in iterations
-				edge.pm.y += deltah;
-			} else {
-				System.out.println("Bereits geteilte Kante gefunden.");
-			}
+			// new vertex coordinates are adjusted randomly in height, i.e. y-dimension
+			double deltah = (Math.random() - 0.5) * 0.2;
+			deltah = deltah / iterations / iterations; // reduce change in height according to progress in iterations
+			edge.pm.y += deltah;
 		}
 
 		// with the help of the new middle vertices we can construct the new triangles
@@ -409,7 +409,8 @@ public class TerraPanel extends JPanel implements KeyListener {
 		int i = 0;
 		for (Triangle told : triangles) {
 			i++;
-			// get the 3 edges and tree vertices first, do not respect any order or orientation
+			// get the 3 edges and tree vertices first, do not respect any order or
+			// orientation
 			ArrayList<Vertex> toldvert = told.getVertices(told);
 			ArrayList<Edge> toldedges = new ArrayList<>();
 			toldedges.add(told.e1);
@@ -421,17 +422,24 @@ public class TerraPanel extends JPanel implements KeyListener {
 				triname += v.label;
 			System.out.println("Processing triangle " + i + ": " + triname);
 
-			// Now that we have got the 3 vertices and 3 edges for the current triangle in temporary ArrayLists  
-			// let's construct the 4 child triangles but do NOT pay attention to any sequence of vertices or edges  
-			// or even orientation of the edges. Vertices and edges are placed in the Lists in a random order.
-			// Idea: 1. Loop through the vertices 
-			//       2. Find the two edges connected with current vertex
-			//       3. Construct child triangle located next to the current vertexes corner of mother triangle
-			//			a Loop over the two edges of 2) and create a new edges for both 
-			// 			  with end points current vertex and middle point of old edge (check if edge already created for neighbor triangle)
-			//			b Create a new edge with end points as the two middle points of the two old edges
-			//			c Remember the new edge of 2b) for the inner new child triangle
-			//       4. Construct child triangle located in the middle of the mother triangle with the help of 3c)
+			// Now that we have got the 3 vertices and 3 edges for the current triangle in
+			// temporary ArrayLists
+			// let's construct the 4 child triangles but do NOT pay attention to any
+			// sequence of vertices or edges
+			// or even orientation of the edges. Vertices and edges are placed in the Lists
+			// in a random order.
+			// Idea: 1. Loop through the vertices
+			// 2. Find the two edges connected with current vertex
+			// 3. Construct child triangle located next to the current vertexes corner of
+			// mother triangle
+			// a Loop over the two edges of 2) and create a new edges for both
+			// with end points current vertex and middle point of old edge (check if edge
+			// already created for neighbor triangle)
+			// b Create a new edge with end points as the two middle points of the two old
+			// edges
+			// c Remember the new edge of 2b) for the inner new child triangle
+			// 4. Construct child triangle located in the middle of the mother triangle with
+			// the help of 3c)
 
 			einnertriangle.clear();
 			for (Vertex v : toldvert) {
@@ -446,14 +454,29 @@ public class TerraPanel extends JPanel implements KeyListener {
 					System.out.println(
 							"Fehler! Beim Subdivide konnten zu einer Ecke die zugehörigen anliegenden Kanten nicht gefunden werden.");
 
-				// 3) Construct the three edges for the child triangle adjacent to the current corner (vertex) of the mother triangle
-				Edge ena = new Edge(v, eadjacent.get(0).pm);
-				Edge enb = new Edge(v, eadjacent.get(1).pm);
+				// 3) Construct the three edges for the child triangle adjacent to the current
+				// corner (vertex) of the mother triangle
+				Edge ena = new Edge(null, null);
+				Edge enb = new Edge(null, null);
+
+				// check if new half-edge was already created for another triangle
+				if (eadjacent.get(0).newedges != null) {
+					if (eadjacent.get(0).newedges.get(0).p1 == v) {
+						ena = eadjacent.get(0).newedges.get(0);
+					} else
+						ena = eadjacent.get(0).newedges.get(1);
+				} else {
+					ena = new Edge(v, eadjacent.get(0).pm);
+					newedges.add(ena);
+				}
+
+				enb = new Edge(v, eadjacent.get(1).pm);
+
 				Edge enc = new Edge(eadjacent.get(0).pm, eadjacent.get(1).pm);
+
 				Triangle tnew = new Triangle(ena, enb, enc);
 
 				// Save new edges and triangle to the temporary list
-				newedges.add(ena);
 				newedges.add(enb);
 				newedges.add(enc);
 				newtriangles.add(tnew);
@@ -468,7 +491,8 @@ public class TerraPanel extends JPanel implements KeyListener {
 
 		System.out.println("----------------------------------------------");
 
-		// Throw away old items and take over the new ones, vertices stay the same,no need to replace them
+		// Throw away old items and take over the new ones, vertices stay the same,no
+		// need to replace them
 		triangles = newtriangles;
 		kanten = newedges;
 	}
